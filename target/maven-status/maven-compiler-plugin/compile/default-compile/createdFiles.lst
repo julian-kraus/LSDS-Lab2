@@ -1,8 +1,0 @@
-spark/WordCount.class
-spark/MostRetweetedApp.class
-edu/upf/model/SimplifiedTweet.class
-spark/BiGramsApp.class
-spark/ExtendedSimplifiedTweet.class
-edu/upf/TwitterFilter.class
-edu/upf/FileLanguageFilter.class
-edu/upf/LanguageFilter.class
