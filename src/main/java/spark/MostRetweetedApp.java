@@ -25,7 +25,7 @@ public class MostRetweetedApp {
         // Load input
         JavaRDD<String> sentences = sparkContext.textFile(input);
         //for( String x : sentences)
-
+        /*
         JavaPairRDD<Long, Long> tweets = sentences
                 .map(x -> ExtendedSimplifiedTweet.fromJson(x))
                 .filter(Optional::isPresent)
@@ -42,6 +42,8 @@ public class MostRetweetedApp {
                 .collect(Collectors.toList())
                 .subList(0, 9);
 
+
+         */
 
 
 
@@ -79,4 +81,4 @@ public class MostRetweetedApp {
         return word.trim().toLowerCase();
     }
 }
-}
+
