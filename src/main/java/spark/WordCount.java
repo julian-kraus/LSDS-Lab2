@@ -19,6 +19,7 @@ public class WordCount {
         JavaSparkContext sparkContext = new JavaSparkContext(conf);
         // Load input
         JavaRDD<String> sentences = sparkContext.textFile(input);
+        System.out.println(sentences.toString());
 
         JavaPairRDD<String, Integer> counts = sentences
             .flatMap(s -> Arrays.asList(s.split("[ ]")).iterator())
