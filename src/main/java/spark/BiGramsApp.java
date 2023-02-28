@@ -37,21 +37,21 @@ public class BiGramsApp {
         // Split filtered by language lines into words that will be normalized
         //List<String> words = langline.flatMap(s -> Arrays.asList(SPACE.split(s)).iterator()).map(BiGramsApp::normalise).collect();
 
-        Map<Pair, Integer> biGrams = new HashMap<>();
+        Map<String[], Integer> biGrams = new HashMap<>();
         for (int j = 0; j < tweets.size() - 1; j++) {
             String tweet = tweets.get(j);
             List<String> words = Arrays.stream(tweet.split(" ")).map(BiGramsApp::normalise).collect(Collectors.toList());
             for (int i = 0; i < (words.size() - 2); i++) {
-                Pair<String, String> p = new Pair<String, String>(words.get(i), words.get(i + 1));
-                if (biGrams.containsKey(p)) {
-                    biGrams.put(p, biGrams.get(p) + 1);
+                String[] arr = {words.get(i), words.get(i + 1)};
+                if (biGrams.containsKey(arr)) {
+                    biGrams.put(arr, biGrams.get(arr) + 1);
                 } else {
-                    biGrams.put(p, 1);
+                    biGrams.put(arr, 1);
                 }
             }
 
         }
-        List<Pair> lst = biGrams.entrySet().stream()
+        List<String[]> lst = biGrams.entrySet().stream()
                 .sorted(Comparator.comparing(Map.Entry::getValue))
                 .limit(10).map(Map.Entry::getKey)
                 .collect(Collectors.toList());
