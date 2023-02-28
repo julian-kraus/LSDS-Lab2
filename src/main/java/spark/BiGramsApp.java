@@ -40,7 +40,7 @@ public class BiGramsApp {
         JavaRDD<String> words = langline.flatMap(s -> Arrays.asList(SPACE.split(s)).iterator()).map(BiGramsApp::normalise);
 
         // Change this part
-        JavaRDD<List<String>> pairs = words.;
+        JavaRDD<List<String>> pairs = words.m;
 
         // Count the occurrences of each pair
         JavaPairRDD<List<String>, Integer> counts = pairs.mapToPair(pair -> new Tuple2<>(pair, 1)).reduceByKey((a, b) -> a + b);
