@@ -8,6 +8,7 @@ import org.apache.spark.SparkConf;
 import scala.Tuple2;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -39,8 +40,10 @@ public class BiGramsApp {
         // Split filtered by language lines into words that will be normalized
         JavaRDD<String> words = langline.flatMap(s -> Arrays.asList(SPACE.split(s)).iterator()).map(BiGramsApp::normalise);
 
-        // Change this part
-        JavaRDD<List<String>> pairs = words.map(x ->)
+        List<String[]> biGrams = new ArrayList<>();
+        for (int i = 0; i < words.count() - 2 + 1; i++)
+            ngrams.add(str.substring(i, i + n));
+
 
         // Count the occurrences of each pair
         JavaPairRDD<List<String>, Integer> counts = pairs.mapToPair(pair -> new Tuple2<>(pair, 1)).reduceByKey((a, b) -> a + b);
