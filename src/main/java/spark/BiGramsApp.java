@@ -1,18 +1,15 @@
 package spark;
 
-import edu.upf.model.SimplifiedTweet;
-import org.apache.spark.api.java.JavaPairRDD;
+import com.sun.tools.javac.util.Pair;
+//import javassist.compiler.ast.Pair;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.SparkConf;
-import scala.Tuple2;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 public class BiGramsApp {
@@ -32,27 +29,33 @@ public class BiGramsApp {
         JavaRDD<String> line = sparkContext.textFile(input); // creates an RDD of strings, where each string represents a line in the file
 
         // Filter each line by language we want for one in specific
-        JavaRDD<String> langline = line.filter(s -> {
+        List<String> tweets = line.filter(s -> {
             Optional<ExtendedSimplifiedTweet> tweet = ExtendedSimplifiedTweet.fromJson(s);
             return tweet.isPresent() && tweet.get().getLanguage().equals(language) && !tweet.get().isRetweeted();
-        });
+        }).collect();
 
         // Split filtered by language lines into words that will be normalized
-        JavaRDD<String> words = langline.flatMap(s -> Arrays.asList(SPACE.split(s)).iterator()).map(BiGramsApp::normalise);
+        //List<String> words = langline.flatMap(s -> Arrays.asList(SPACE.split(s)).iterator()).map(BiGramsApp::normalise).collect();
 
-        List<String[]> biGrams = new ArrayList<>();
-        for (int i = 0; i < words.count() - 2 + 1; i++)
-            ngrams.add(str.substring(i, i + n));
-
-
-        // Count the occurrences of each pair
-        JavaPairRDD<List<String>, Integer> counts = pairs.mapToPair(pair -> new Tuple2<>(pair, 1)).reduceByKey((a, b) -> a + b);
-
-        // Sort by descending order of occurrence and take the top 10
-        List<Tuple2<List<String>, Integer>> top10 = counts.mapToPair(Tuple2::swap).sortByKey(false).take(10);
-
-        // Save the result
-        sparkContext.parallelize(top10).saveAsTextFile(outputDir);
+        Map<Pair, Integer> biGrams = new HashMap<>();
+        for (int j = 0; j < tweets.size() - 1; j++) {
+            String tweet = tweets.get(j);
+            List<String> words = Arrays.stream(tweet.split(" ")).map(BiGramsApp::normalise).collect(Collectors.toList());
+            for (int i = 0; i < (words.size() - 2); i++) {
+                Pair<String, String> p = new Pair<String, String>(words.get(i), words.get(i + 1));
+                if (biGrams.containsKey(p)) {
+                    biGrams.put(p, biGrams.get(p) + 1);
+                } else {
+                    biGrams.put(p, 1);
+                }
+            }
+        }
+        List<Pair> lst = biGrams.entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getValue))
+                .limit(10).map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        System.out.println(lst.toString());
+        sparkContext.parallelize(lst).saveAsTextFile(outputDir);
 
 
  /*
@@ -92,7 +95,7 @@ public class BiGramsApp {
 
          */
 
-    }
+        }
 
     private static String normalise(String word) {
         return word.trim().toLowerCase();
