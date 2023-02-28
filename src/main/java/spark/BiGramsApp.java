@@ -49,6 +49,7 @@ public class BiGramsApp {
                     biGrams.put(p, 1);
                 }
             }
+
         }
         List<Pair> lst = biGrams.entrySet().stream()
                 .sorted(Comparator.comparing(Map.Entry::getValue))
