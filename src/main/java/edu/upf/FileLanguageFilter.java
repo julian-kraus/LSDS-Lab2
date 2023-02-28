@@ -66,6 +66,10 @@ public class FileLanguageFilter {
                 }
                 bw.close();
 
+
+                //JavaRDD<String> t = sentences.map(string -> SimplifiedTweet.fromJson(string)).filter(o -> o.isPresent() && o.get().getLanguage().equals(language)).map(object -> object.get().toString());
+                //t.saveAsTextFile(outputFile);
+
         
         } catch(Exception e){
             e.printStackTrace();

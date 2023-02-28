@@ -70,7 +70,7 @@ public class ExtendedSimplifiedTweet {
            jo.has("timestamp_ms") &&
            jo.has("retweeted")
           ){
-              boolean isRetweeted = jo.get("retweeted").getAsBoolean();
+              boolean isRetweeted = jo.has("retweeted_status");
               if (isRetweeted) {
                   JsonObject retweetedTweet = jo.getAsJsonObject("retweeted_status");
                   if (retweetedTweet.has("id") &&

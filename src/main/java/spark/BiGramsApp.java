@@ -20,6 +20,7 @@ public class BiGramsApp {
         String input = args[0];
         String outputDir = args[1];
         String language = args[2];
+        System.out.println(language);
 
         //Create a SparkContext to initialize
         SparkConf conf = new SparkConf().setAppName("BiGrams");
@@ -27,36 +28,41 @@ public class BiGramsApp {
 
         // Load input
         JavaRDD<String> line = sparkContext.textFile(input); // creates an RDD of strings, where each string represents a line in the file
-
         // Filter each line by language we want for one in specific
-        List<String> tweets = line.filter(s -> {
-            Optional<ExtendedSimplifiedTweet> tweet = ExtendedSimplifiedTweet.fromJson(s);
-            return tweet.isPresent() && tweet.get().getLanguage().equals(language) && !tweet.get().isRetweeted();
-        }).collect();
+        List<String> tweets = line.map(t -> ExtendedSimplifiedTweet.fromJson(t)).filter(s -> {
+            return s.isPresent() && s.get().getLanguage().equals(language) && !s.get().isRetweeted();
+        }).map(s -> s.get().getText()).collect();
 
         // Split filtered by language lines into words that will be normalized
         //List<String> words = langline.flatMap(s -> Arrays.asList(SPACE.split(s)).iterator()).map(BiGramsApp::normalise).collect();
 
-        Map<String[], Integer> biGrams = new HashMap<>();
+        Map<String, Integer> biGrams = new HashMap<>();
+        System.out.println(tweets.size());
         for (int j = 0; j < tweets.size() - 1; j++) {
             String tweet = tweets.get(j);
             List<String> words = Arrays.stream(tweet.split(" ")).map(BiGramsApp::normalise).collect(Collectors.toList());
             for (int i = 0; i < (words.size() - 2); i++) {
-                String[] arr = {words.get(i), words.get(i + 1)};
-                if (biGrams.containsKey(arr)) {
-                    biGrams.put(arr, biGrams.get(arr) + 1);
+                String str = words.get(i) + " " + words.get(i+1);
+                //String[] arr = {words.get(i), words.get(i + 1)};
+                if (biGrams.containsKey(str)) {
+                    int oldVal= biGrams.get(str);
+                    biGrams.replace(str, oldVal + 1);
+                    biGrams.put(str, biGrams.get(str) + 1);
                 } else {
-                    biGrams.put(arr, 1);
+                    biGrams.put(str, 1);
                 }
             }
 
         }
-        List<String[]> lst = biGrams.entrySet().stream()
+        List<Map.Entry<String, Integer>> lst = biGrams.entrySet().stream()
                 .sorted(Comparator.comparing(Map.Entry::getValue))
-                .limit(10).map(Map.Entry::getKey)
                 .collect(Collectors.toList());
-        System.out.println(lst.toString());
-        sparkContext.parallelize(lst).saveAsTextFile(outputDir);
+        System.out.println(lst.get(lst.size()-1));
+        for (int i = lst.size()-1; i > lst.size() - 15; i--){
+
+            System.out.println(lst.get(i).getValue() + " " + lst.get(i).getKey());
+        }
+        //sparkContext.parallelize(lst).saveAsTextFile(outputDir);
 
 
  /*
